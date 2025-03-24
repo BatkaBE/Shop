@@ -13,5 +13,5 @@ public class UserDTO {
     private Long id;
     private String name;
     private List<OrderDTO> orders;
-    private Long profileId;
+    private ProfileDTO profileDTO; // Add this line
 }
