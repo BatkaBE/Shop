@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.ProductDTO;
 import com.example.demo.service.ProductService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,12 +30,24 @@ public class ProductController {
     }
 
     /**
-     * Get all products.
+     * Pagination-тэй бүтээгдэхүүн авах
      */
-    @GetMapping
-    public ResponseEntity<List<ProductDTO>> getAllProductsLimited() {
-        List<ProductDTO> products = productService.getAllProductsLimited();
-        return ResponseEntity.ok(products);
+    @GetMapping("/paginated")
+    public Page<ProductDTO> getProductsPaginated(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return productService.getProductsPaginated(page, size);
+    }
+
+    /**
+     * Filtering-тэй бүтээгдэхүүн авах
+     */
+    @GetMapping("/filter")
+    public List<ProductDTO> getProductsFiltered(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice) {
+        return productService.getProductsFiltered(name, minPrice, maxPrice);
     }
 
     /**
