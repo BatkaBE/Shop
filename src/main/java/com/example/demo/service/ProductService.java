@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.dto.ProductDTO;
 import com.example.demo.entity.Product;
+import com.example.demo.exception.ProductNotFoundException;
 import com.example.demo.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -104,7 +105,7 @@ public class ProductService {
     public ProductDTO updateProduct(Long id, ProductDTO productDto) {
         validateProduct(productDto);
         Product existingProduct = productRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+                .orElseThrow(() -> new ProductNotFoundException(id));
 
         if (productDto.getName() != null && !productDto.getName().isEmpty()) {
             existingProduct.setName(productDto.getName());
@@ -125,7 +126,7 @@ public class ProductService {
      */
     public void deleteProduct(Long id) {
         if (!productRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found");
+            throw new ProductNotFoundException(id);
         }
         productRepository.deleteById(id);
     }

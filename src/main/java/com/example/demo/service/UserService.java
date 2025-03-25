@@ -63,7 +63,7 @@ public class UserService {
         User user = new User();
         user.setId(userDTO.getId());
         user.setName(userDTO.getName());
-        // Note: Setting orders and profile should be handled separately
+
         return user;
     }
 }
