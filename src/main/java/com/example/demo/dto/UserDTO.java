@@ -13,5 +13,6 @@ public class UserDTO {
     private Long id;
     private String name;
     private List<OrderDTO> orders;
-    private ProfileDTO profileDTO; // Add this line
+    private Long profileId;  // Changed from ProfileDTO to just store the ID
+
 }

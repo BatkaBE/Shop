@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class ProfileDTO {
     private Long id;
     private String address;
+
 }

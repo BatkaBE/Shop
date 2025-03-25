@@ -5,12 +5,14 @@ import com.example.demo.entity.Product;
 import com.example.demo.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Service class for managing Product entities.
@@ -57,16 +59,35 @@ public class ProductService {
     }
 
     /**
-     * Get all the products with a custom max size.
-     *
-     * @return the list of entities
+     * Pagination-тэй бүтээгдэхүүн авах
      */
-    public List<ProductDTO> getAllProductsLimited() {
-        List<Product> products = productRepository.findAll();
+    public Page<ProductDTO> getProductsPaginated(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
+        Page<Product> products = productRepository.findAll(pageable);
+        return products.map(this::mapToDto);
+    }
 
-        return products.size() > maxSize ?
-                products.stream().limit(maxSize).map(this::mapToDto).toList()
-                : products.stream().map(this::mapToDto).toList();
+    /**
+     * Filtering-тэй бүтээгдэхүүн авах
+     */
+    public List<ProductDTO> getProductsFiltered(String name, Double minPrice, Double maxPrice) {
+        ExampleMatcher matcher = ExampleMatcher.matching()
+                .withIgnoreCase()
+                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
+
+        Product probe = new Product();
+        if (name != null && !name.isEmpty()) {
+            probe.setName(name);
+        }
+
+        Example<Product> example = Example.of(probe, matcher);
+        List<Product> products = productRepository.findAll(example);
+
+        return products.stream()
+                .filter(p -> (minPrice == null || p.getPrice() >= minPrice) &&
+                        (maxPrice == null || p.getPrice() <= maxPrice))
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
     }
 
     /**

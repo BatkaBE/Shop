@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/order-products")
+@RequestMapping("/cart")
 public class OrderProductController {
 
     private final OrderProductService orderProductService;
@@ -19,10 +19,15 @@ public class OrderProductController {
         this.orderProductService = orderProductService;
     }
 
-    @PostMapping
-    public ResponseEntity<Void> addProductToOrder(@RequestBody OrderProductDTO orderProductDTO) {
+    @PostMapping("/add")
+    public ResponseEntity<String> addProductToCart(@RequestBody OrderProductDTO orderProductDTO) {
         orderProductService.addProductsToOrder(orderProductDTO);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        return ResponseEntity.ok("Product added to cart successfully");
+    }
+    @GetMapping
+    public ResponseEntity<List<ProductDTO>> findOrderedProductsByUser(@RequestParam Long userId) {
+        List<ProductDTO> products = orderProductService.findOrderedProductsByUser(userId);
+        return ResponseEntity.ok(products);
     }
 
     @GetMapping("/{orderId}")
@@ -31,11 +36,17 @@ public class OrderProductController {
         return ResponseEntity.ok(products);
     }
 
-    @DeleteMapping
-    public ResponseEntity<Void> deleteProductFromOrder(@RequestBody OrderProductDTO orderProductDTO) {
+    @DeleteMapping("/remove")
+    public ResponseEntity<String> removeProductFromCart(@RequestBody OrderProductDTO orderProductDTO) {
         orderProductService.deleteProductFromOrder(orderProductDTO);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Бараа сагснаас устгагдлаа");
     }
+    @DeleteMapping("/delete/all")
+    public ResponseEntity<String> deleteProductsByUser(@RequestParam Long userId) {
+        orderProductService.deleteProductsByUserId(userId);
+        return ResponseEntity.ok("Хэрэглэгчийн бүх бараа амжилттай устгагдлаа");
+    }
+
 
     @PutMapping("/{orderId}")
     public ResponseEntity<Void> updateProductsInOrder(

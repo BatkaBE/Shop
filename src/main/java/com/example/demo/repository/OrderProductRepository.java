@@ -3,7 +3,9 @@ package com.example.demo.repository;
 import com.example.demo.entity.Order;
 import com.example.demo.entity.OrderProduct;
 import com.example.demo.entity.Product;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -20,7 +22,23 @@ public interface OrderProductRepository extends JpaRepository<OrderProduct, Long
 
     void deleteByOrderAndProduct(Order order, Product product);
 
+    @Query("SELECT p FROM Product p " +
+            "JOIN OrderProduct op ON op.product.id = p.id " +
+            "JOIN Order o ON o.id = op.order.id " +
+            "JOIN User u ON u.id = o.user.id " +
+            "WHERE u.id = :userId")
+    List<Product> findOrderedProductsByUser(Long userId);
 
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM ProductEntity p " +
+            "WHERE p.id IN (SELECT p.id FROM ProductEntity p " +
+            "JOIN OrderProductEntity op ON op.product.id = p.id " +
+            "JOIN OrderEntity o ON o.id = op.order.id " +
+            "JOIN UserEntity u ON u.id = o.user.id " +
+            "WHERE u.id = :userId)")
+    void deleteProductsByUserId(Long userId);
 //    @Query("SELECT p FROM Product p WHERE p.id IN (SELECT op.product.id FROM OrderProduct op WHERE op.order.id = :orderId)")
 //    List<Product> findProductsByOrderId(Long orderId);
 }
