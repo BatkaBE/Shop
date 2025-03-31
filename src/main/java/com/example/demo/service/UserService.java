@@ -2,7 +2,8 @@ package com.example.demo.service;
 
 import com.example.demo.dto.UserDTO;
 import com.example.demo.entity.User;
-import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.exception.NotFoundError;
+import com.example.demo.exception.UniqueFieldError;
 import com.example.demo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,8 @@ public class UserService {
 
     public UserDTO getUserById(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundError("Хэрэглэгч олдсонгүй"));
+
         return convertToDTO(user);
     }
 
@@ -35,7 +37,8 @@ public class UserService {
 
     public UserDTO updateUser(Long id, UserDTO userDTO) {
         User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundError("Хэрэглэгч олдсонгүй"));
+
 
         existingUser.setName(userDTO.getName());
 
@@ -45,7 +48,7 @@ public class UserService {
 
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
-            throw new ResourceNotFoundException("User not found with ID: " + id);
+            throw new UniqueFieldError("id", id);
         }
         userRepository.deleteById(id);
     }
