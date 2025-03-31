@@ -3,8 +3,8 @@ package com.example.demo.service;
 import com.example.demo.dto.OrderDTO;
 import com.example.demo.entity.Order;
 import com.example.demo.entity.User;
-import com.example.demo.exception.OrderNotFoundException;
-import com.example.demo.exception.UserNotFoundException;
+import com.example.demo.exception.NotFoundError;
+import com.example.demo.exception.UniqueFieldError;
 import com.example.demo.repository.OrderRepository;
 import com.example.demo.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -32,7 +32,7 @@ public class OrderService {
 
     public OrderDTO getOrderById(Long id) {
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new OrderNotFoundException(id));
+                .orElseThrow(() -> new NotFoundError("Хэрэглэгч олдсонгүй"));
         return convertToDTO(order);
     }
 
@@ -43,14 +43,14 @@ public class OrderService {
 
     public OrderDTO updateOrder(Long id, OrderDTO orderDTO) {
         Order existingOrder = orderRepository.findById(id)
-                .orElseThrow(() -> new OrderNotFoundException(id));
+                .orElseThrow(() -> new NotFoundError("Захиалга олдсонгүй"));
 
         existingOrder.setOrderDate(orderDTO.getOrderDate());
         existingOrder.setTotalAmount(orderDTO.getTotalAmount());
 
         if (!existingOrder.getUser().getId().equals(orderDTO.getUserId())) {
             User newUser = userRepository.findById(orderDTO.getUserId())
-                    .orElseThrow(() -> new UserNotFoundException("User not found for orderId: " + id));
+                    .orElseThrow(() -> new NotFoundError("Хэрэглэгч олдсонгүй"));
             existingOrder.setUser(newUser);
         }
 
@@ -60,7 +60,7 @@ public class OrderService {
 
     public void deleteOrder(Long id) {
         if (!orderRepository.existsById(id)) {
-            throw new OrderNotFoundException(id);
+            throw new UniqueFieldError("id", id);
         }
         orderRepository.deleteById(id);
     }
@@ -85,7 +85,7 @@ public class OrderService {
         order.setTotalAmount(orderDTO.getTotalAmount());
 
         User user = userRepository.findById(orderDTO.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new NotFoundError("Хэрэглэгч олдсонгүй"));
         order.setUser(user);
 
         return order;

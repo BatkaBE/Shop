@@ -2,7 +2,9 @@ package com.example.demo.service;
 
 import com.example.demo.dto.ProductDTO;
 import com.example.demo.entity.Product;
-import com.example.demo.exception.ProductNotFoundException;
+import com.example.demo.exception.NotFoundError;
+import com.example.demo.exception.UniqueFieldError;
+import com.example.demo.exception.ValidationError;
 import com.example.demo.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -105,7 +107,7 @@ public class ProductService {
     public ProductDTO updateProduct(Long id, ProductDTO productDto) {
         validateProduct(productDto);
         Product existingProduct = productRepository.findById(id)
-                .orElseThrow(() -> new ProductNotFoundException(id));
+                .orElseThrow(() -> new NotFoundError("Бараа олдсонгүй"));
 
         if (productDto.getName() != null && !productDto.getName().isEmpty()) {
             existingProduct.setName(productDto.getName());
@@ -126,7 +128,7 @@ public class ProductService {
      */
     public void deleteProduct(Long id) {
         if (!productRepository.existsById(id)) {
-            throw new ProductNotFoundException(id);
+            throw new UniqueFieldError("id", id);
         }
         productRepository.deleteById(id);
     }
@@ -136,13 +138,13 @@ public class ProductService {
      */
     private void validateProduct(ProductDTO productDto) {
         if (productDto.getName() == null || productDto.getName().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product name is required");
+            throw new ValidationError("Барааны нэрийг оруулах шаардлагатай\n");
         }
         if (productDto.getPrice() == null || productDto.getPrice() < 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Price must be non-negative");
+            throw new ValidationError( "Үнэ сөрөг биш байх ёстой");
         }
         if (productDto.getQuantity() < 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quantity must be non-negative");
+            throw new ValidationError("Тоо хэмжээ нь сөрөг биш байх ёстой\n");
         }
     }
 }

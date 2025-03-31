@@ -13,9 +13,11 @@ import java.util.List;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    @Query("select p from Product p where p.name=:name")
+    @Query("SELECT p FROM Product p WHERE p.name = :name")
     List<Product> getProductsByName(String name);
 
-    List<Product> findAllById(Iterable<Long> ids);
+    @Query("SELECT p FROM Product p WHERE p.id IN :ids")
+    List<Product> findAllByIdIn(List<Long> ids);
+
     List<Product> findByCategoryId(Long categoryId);
 }

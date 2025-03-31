@@ -6,9 +6,7 @@ import com.example.demo.entity.Order;
 import com.example.demo.entity.OrderProduct;
 import com.example.demo.entity.Product;
 import com.example.demo.entity.User;
-import com.example.demo.exception.OrderNotFoundException;
-import com.example.demo.exception.ProductNotFoundException;
-import com.example.demo.exception.UserNotFoundException;
+import com.example.demo.exception.NotFoundError;
 import com.example.demo.repository.OrderProductRepository;
 import com.example.demo.repository.OrderRepository;
 import com.example.demo.repository.ProductRepository;
@@ -43,7 +41,7 @@ public class OrderProductService {
                 .orElseGet(() -> createNewOrderForUserByOrderId(orderProductDTO.getOrderId()));
 
         Product product = productRepository.findById(orderProductDTO.getProductId())
-                .orElseThrow(() -> new ProductNotFoundException(orderProductDTO.getProductId()));
+                .orElseThrow(() -> new NotFoundError("Хэрэглэгч олдсонгүй"));
 
         OrderProduct orderProduct = new OrderProduct();
         orderProduct.setOrder(order);
@@ -55,7 +53,7 @@ public class OrderProductService {
         // Retrieve user from the orderId
         User user = orderRepository.findById(orderId)
                 .map(Order::getUser)
-                .orElseThrow(() -> new UserNotFoundException("User not found for orderId: " + orderId));
+                .orElseThrow(() -> new NotFoundError("Захиалга олдсонгүй"));
 
         Order newOrder = new Order();
         newOrder.setUser(user);
@@ -71,10 +69,10 @@ public class OrderProductService {
 
     public void deleteProductFromOrder(OrderProductDTO orderProductDTO) {
         Order order = orderRepository.findById(orderProductDTO.getOrderId())
-                .orElseThrow(() -> new OrderNotFoundException(orderProductDTO.getOrderId()));
+                .orElseThrow(() -> new NotFoundError("Захиалга олдсонгүй"));
 
         Product product = productRepository.findById(orderProductDTO.getProductId())
-                .orElseThrow(() -> new ProductNotFoundException(orderProductDTO.getProductId()));
+                .orElseThrow(() ->  new NotFoundError("Бараа олдсонгүй"));
 
         orderProductRepository.deleteByOrderAndProduct(order, product);
     }
@@ -90,10 +88,10 @@ public class OrderProductService {
 
     public void addProductsToOrder(OrderProductDTO orderProductDTO) {
         Order order = orderRepository.findById(orderProductDTO.getOrderId())
-                .orElseThrow(() -> new OrderNotFoundException(orderProductDTO.getOrderId()));
+                .orElseThrow(() -> new NotFoundError("Захиалга олдсонгүй"));
 
         Product product = productRepository.findById(orderProductDTO.getProductId())
-                .orElseThrow(() -> new ProductNotFoundException(orderProductDTO.getProductId()));
+                .orElseThrow(() -> new NotFoundError("Бараа олдсонгүй"));
 
         boolean productExistsInOrder = order.getOrderProducts().stream()
                 .anyMatch(op -> op.getProduct().getId().equals(product.getId()));
@@ -108,21 +106,21 @@ public class OrderProductService {
 
     public void updateProductsInOrder(Long orderId, List<OrderProductDTO> toRemove, List<OrderProductDTO> toAdd) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException(orderId));
+                .orElseThrow(() -> new NotFoundError("Захиалга олдсонгүй"));
 
         for (OrderProductDTO removeDTO : toRemove) {
             Product productToRemove = productRepository.findById(removeDTO.getProductId())
-                    .orElseThrow(() -> new ProductNotFoundException(removeDTO.getProductId()));
+                    .orElseThrow(() -> new NotFoundError("Бараа олдсонгүй"));
 
             OrderProduct orderProduct = orderProductRepository.findByOrderAndProduct(order, productToRemove)
-                    .orElseThrow(() -> new RuntimeException("Product not found in the order"));
+                    .orElseThrow(() -> new NotFoundError("Захиалгад бараанууд олдсонгүй"));
 
             orderProductRepository.delete(orderProduct);
         }
 
         for (OrderProductDTO addDTO : toAdd) {
             Product productToAdd = productRepository.findById(addDTO.getProductId())
-                    .orElseThrow(() -> new ProductNotFoundException(addDTO.getProductId()));
+                    .orElseThrow(() -> new NotFoundError("Бараа олдсонгүй"));
 
 
             boolean productExistsInOrder = order.getOrderProducts().stream()

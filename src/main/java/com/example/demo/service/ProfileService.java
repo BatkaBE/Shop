@@ -2,8 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.dto.ProfileDTO;
 import com.example.demo.entity.Profile;
-import com.example.demo.entity.User;
-import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.exception.NotFoundError;
 import com.example.demo.repository.ProfileRepository;
 import com.example.demo.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -33,7 +32,7 @@ public class ProfileService {
     @Transactional(readOnly = true)
     public ProfileDTO getProfileById(Long id) {
         Profile profile = profileRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Profile not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundError("Профайл олдсонгүй"));
         return convertToDTO(profile);
     }
 
@@ -48,10 +47,9 @@ public class ProfileService {
     @Transactional
     public ProfileDTO updateProfile(Long id, ProfileDTO profileDTO) {
         Profile existingProfile = profileRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Profile not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundError("Профайл олдсонгүй"));
 
         existingProfile.setAddress(profileDTO.getAddress());
-
         Profile updatedProfile = profileRepository.save(existingProfile);
         return convertToDTO(updatedProfile);
     }
@@ -59,7 +57,7 @@ public class ProfileService {
     @Transactional
     public void deleteProfile(Long id) {
         if (!profileRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Profile not found with ID: " + id);
+            throw new NotFoundError("Профайл олдсонгүй");
         }
         profileRepository.deleteById(id);
     }
@@ -75,7 +73,7 @@ public class ProfileService {
         Profile profile = new Profile();
         profile.setId(profileDTO.getId());
         profile.setAddress(profileDTO.getAddress());
-        // User relationship would need to be handled separately
+
         return profile;
     }
 }

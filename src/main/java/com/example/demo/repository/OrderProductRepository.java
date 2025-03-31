@@ -31,13 +31,7 @@ public interface OrderProductRepository extends JpaRepository<OrderProduct, Long
 
 
     @Modifying
-    @Transactional
-    @Query("DELETE FROM ProductEntity p " +
-            "WHERE p.id IN (SELECT p.id FROM ProductEntity p " +
-            "JOIN OrderProductEntity op ON op.product.id = p.id " +
-            "JOIN OrderEntity o ON o.id = op.order.id " +
-            "JOIN UserEntity u ON u.id = o.user.id " +
-            "WHERE u.id = :userId)")
+    @Query("DELETE FROM OrderProduct op WHERE op.order.user.id = :userId")
     void deleteProductsByUserId(Long userId);
 //    @Query("SELECT p FROM Product p WHERE p.id IN (SELECT op.product.id FROM OrderProduct op WHERE op.order.id = :orderId)")
 //    List<Product> findProductsByOrderId(Long orderId);
