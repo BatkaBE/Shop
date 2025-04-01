@@ -2,19 +2,14 @@ package com.example.demo.service;
 
 import com.example.demo.dto.OrderProductDTO;
 import com.example.demo.dto.ProductDTO;
-import com.example.demo.entity.Order;
-import com.example.demo.entity.OrderProduct;
-import com.example.demo.entity.Product;
-import com.example.demo.entity.User;
+import com.example.demo.entity.*;
 import com.example.demo.exception.NotFoundError;
-import com.example.demo.repository.OrderProductRepository;
-import com.example.demo.repository.OrderRepository;
-import com.example.demo.repository.ProductRepository;
-import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,25 +30,26 @@ public class OrderProductService {
         this.userRepository = userRepository;
     }
 
-    @Transactional
-    public void addProductsToOrderWithAutoCreate(OrderProductDTO orderProductDTO) {
-        Order order = orderRepository.findById(orderProductDTO.getOrderId())
-                .orElseGet(() -> createNewOrderForUserByOrderId(orderProductDTO.getOrderId()));
+        @Transactional
+        public void addProductsToOrderWithAutoCreate(OrderProductDTO orderProductDTO) {
+            // Get or create order
+            Order order = orderRepository.findById(orderProductDTO.getOrderId())
+                    .orElseGet(() -> createNewOrderForUser(orderProductDTO.getUserId()));
 
-        Product product = productRepository.findById(orderProductDTO.getProductId())
+            // Get product
+            Product product = productRepository.findById(orderProductDTO.getProductId())
+                    .orElseThrow(() -> new NotFoundError("Бараа олдсонгүй"));
+
+            // Add product to order
+            addProductToOrder(order, product);
+
+            // Update order total
+            updateOrderTotal(order);
+        }
+
+    private Order createNewOrderForUser(Long userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundError("Хэрэглэгч олдсонгүй"));
-
-        OrderProduct orderProduct = new OrderProduct();
-        orderProduct.setOrder(order);
-        orderProduct.setProduct(product);
-        orderProductRepository.save(orderProduct);
-    }
-
-    private Order createNewOrderForUserByOrderId(Long orderId) {
-        // Retrieve user from the orderId
-        User user = orderRepository.findById(orderId)
-                .map(Order::getUser)
-                .orElseThrow(() -> new NotFoundError("Захиалга олдсонгүй"));
 
         Order newOrder = new Order();
         newOrder.setUser(user);
@@ -61,31 +57,27 @@ public class OrderProductService {
         return orderRepository.save(newOrder);
     }
 
+    @Transactional
     public List<ProductDTO> getProductsByOrderId(Long orderId) {
-        return orderProductRepository.getProductsByOrderId(orderId).stream()
+        return orderProductRepository.findByOrderId(orderId).stream()
+                .map(OrderProduct::getProduct)
                 .map(this::convertToProductDTO)
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public void deleteProductFromOrder(OrderProductDTO orderProductDTO) {
         Order order = orderRepository.findById(orderProductDTO.getOrderId())
                 .orElseThrow(() -> new NotFoundError("Захиалга олдсонгүй"));
 
         Product product = productRepository.findById(orderProductDTO.getProductId())
-                .orElseThrow(() ->  new NotFoundError("Бараа олдсонгүй"));
+                .orElseThrow(() -> new NotFoundError("Бараа олдсонгүй"));
 
         orderProductRepository.deleteByOrderAndProduct(order, product);
+        updateOrderTotal(order);
     }
 
-    private ProductDTO convertToProductDTO(Product product) {
-        return new ProductDTO(
-                product.getId(),
-                product.getName(),
-                product.getPrice(),
-                product.getQuantity()
-        );
-    }
-
+    @Transactional
     public void addProductsToOrder(OrderProductDTO orderProductDTO) {
         Order order = orderRepository.findById(orderProductDTO.getOrderId())
                 .orElseThrow(() -> new NotFoundError("Захиалга олдсонгүй"));
@@ -93,56 +85,76 @@ public class OrderProductService {
         Product product = productRepository.findById(orderProductDTO.getProductId())
                 .orElseThrow(() -> new NotFoundError("Бараа олдсонгүй"));
 
-        boolean productExistsInOrder = order.getOrderProducts().stream()
-                .anyMatch(op -> op.getProduct().getId().equals(product.getId()));
-
-        if (!productExistsInOrder) {
-            OrderProduct orderProduct = new OrderProduct();
-            orderProduct.setOrder(order);
-            orderProduct.setProduct(product);
-            orderProductRepository.save(orderProduct);
+        if (!orderProductRepository.existsByOrderAndProduct(order, product)) {
+            addProductToOrder(order, product);
+            updateOrderTotal(order);
         }
     }
 
+    @Transactional
     public void updateProductsInOrder(Long orderId, List<OrderProductDTO> toRemove, List<OrderProductDTO> toAdd) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundError("Захиалга олдсонгүй"));
 
-        for (OrderProductDTO removeDTO : toRemove) {
-            Product productToRemove = productRepository.findById(removeDTO.getProductId())
+        // Remove products
+        toRemove.forEach(dto -> {
+            Product product = productRepository.findById(dto.getProductId())
                     .orElseThrow(() -> new NotFoundError("Бараа олдсонгүй"));
+            orderProductRepository.deleteByOrderAndProduct(order, product);
+        });
 
-            OrderProduct orderProduct = orderProductRepository.findByOrderAndProduct(order, productToRemove)
-                    .orElseThrow(() -> new NotFoundError("Захиалгад бараанууд олдсонгүй"));
-
-            orderProductRepository.delete(orderProduct);
-        }
-
-        for (OrderProductDTO addDTO : toAdd) {
-            Product productToAdd = productRepository.findById(addDTO.getProductId())
+        // Add new products
+        toAdd.forEach(dto -> {
+            Product product = productRepository.findById(dto.getProductId())
                     .orElseThrow(() -> new NotFoundError("Бараа олдсонгүй"));
-
-
-            boolean productExistsInOrder = order.getOrderProducts().stream()
-                    .anyMatch(op -> op.getProduct().getId().equals(productToAdd.getId()));
-
-            if (!productExistsInOrder) {
-                OrderProduct orderProduct = new OrderProduct();
-                orderProduct.setOrder(order);
-                orderProduct.setProduct(productToAdd);
-                orderProductRepository.save(orderProduct);
-
+            if (!orderProductRepository.existsByOrderAndProduct(order, product)) {
+                addProductToOrder(order, product);
             }
-        }
+        });
+
+        updateOrderTotal(order);
     }
+
+    @Transactional
     public List<ProductDTO> findOrderedProductsByUser(Long userId) {
-        List<Product> products = orderProductRepository.findOrderedProductsByUser(userId);
-        return products.stream()
-                .map(p -> new ProductDTO(p.getId(), p.getName(), p.getPrice(), p.getQuantity()))
+        return orderProductRepository.findByOrderUser_Id(userId).stream()
+                .map(OrderProduct::getProduct)
+                .distinct()
+                .map(this::convertToProductDTO)
                 .collect(Collectors.toList());
     }
+
     @Transactional
     public void deleteProductsByUserId(Long userId) {
-        orderProductRepository.deleteProductsByUserId(userId);
+        orderProductRepository.deleteByOrderUser_Id(userId);
+    }
+
+    // In OrderProductService.java
+    private void addProductToOrder(Order order, Product product) {
+        OrderProduct orderProduct = new OrderProduct();
+        orderProduct.setOrder(order);  // Sets both relationship and ID
+        orderProduct.setProduct(product);
+        orderProductRepository.save(orderProduct);
+
+        // Maintain bi-directional relationship
+        order.getOrderProducts().add(orderProduct);
+        product.getOrderProducts().add(orderProduct);
+    }
+
+    private void updateOrderTotal(Order order) {
+        Double total = orderProductRepository.sumProductPricesByOrder(order.getId())
+                .orElse(0.0);
+        order.setTotalAmount(total);
+        orderRepository.save(order);
+    }
+
+    private ProductDTO convertToProductDTO(Product product) {
+        return new ProductDTO(
+                product.getId(),
+                product.getName(),
+                product.getPrice(),
+                product.getQuantity(),
+                product.getCategoryId()
+        );
     }
 }

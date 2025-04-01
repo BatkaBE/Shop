@@ -1,13 +1,9 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-
 import lombok.Getter;
 import lombok.Setter;
-
 import java.util.List;
-import java.util.Set;
-
 
 @Setter
 @Getter
@@ -29,10 +25,13 @@ public class Product {
     private int quantity;
 
     @ManyToOne
-    @JoinColumn(name = "category_id")  // Creates foreign key column
+    @JoinColumn(name = "category_id")
     private Category category;
 
     @OneToMany(mappedBy = "product")
     private List<OrderProduct> orderProducts;
 
+    public Long getCategoryId() {
+        return (category != null) ? category.getId() : null;
+    }
 }

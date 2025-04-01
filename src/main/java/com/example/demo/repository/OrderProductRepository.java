@@ -14,25 +14,17 @@ import java.util.Optional;
 
 @Repository
 public interface OrderProductRepository extends JpaRepository<OrderProduct, Long> {
-
-    @Query("SELECT p FROM Product p WHERE p.id IN (SELECT op.product.id FROM OrderProduct op WHERE op.order.id = :id)")
-    List<Product> getProductsByOrderId(Long id);
-
-    Optional<OrderProduct> findByOrderAndProduct(Order order, Product product);
-
+    List<OrderProduct> findByOrderId(Long orderId);
+    boolean existsByOrderAndProduct(Order order, Product product);
     void deleteByOrderAndProduct(Order order, Product product);
 
-    @Query("SELECT p FROM Product p " +
-            "JOIN OrderProduct op ON op.product.id = p.id " +
-            "JOIN Order o ON o.id = op.order.id " +
-            "JOIN User u ON u.id = o.user.id " +
-            "WHERE u.id = :userId")
-    List<Product> findOrderedProductsByUser(Long userId);
-
+    @Query("SELECT SUM(p.price) FROM OrderProduct op JOIN op.product p WHERE op.order.id = :orderId")
+    Optional<Double> sumProductPricesByOrder(Long orderId);
 
     @Modifying
     @Query("DELETE FROM OrderProduct op WHERE op.order.user.id = :userId")
-    void deleteProductsByUserId(Long userId);
-//    @Query("SELECT p FROM Product p WHERE p.id IN (SELECT op.product.id FROM OrderProduct op WHERE op.order.id = :orderId)")
-//    List<Product> findProductsByOrderId(Long orderId);
+    void deleteByOrderUser_Id(Long userId);
+
+    @Query("SELECT op FROM OrderProduct op JOIN FETCH op.product WHERE op.order.user.id = :userId")
+    List<OrderProduct> findByOrderUser_Id(Long userId);
 }

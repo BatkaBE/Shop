@@ -27,7 +27,6 @@ public class ProductService {
     @Value("${custom.product.max_size}")
     private int maxSize;
 
-    @Autowired
     public ProductService(ProductRepository productRepository) {
         this.productRepository = productRepository;
     }
@@ -48,7 +47,7 @@ public class ProductService {
      * Convert Product entity to ProductDto.
      */
     private ProductDTO mapToDto(Product product) {
-        return new ProductDTO(product.getId(), product.getName(), product.getPrice(), product.getQuantity());
+        return new ProductDTO(product.getId(), product.getName(), product.getPrice(), product.getQuantity(),product.getCategoryId());
     }
 
     /**
@@ -112,9 +111,6 @@ public class ProductService {
         if (productDto.getName() != null && !productDto.getName().isEmpty()) {
             existingProduct.setName(productDto.getName());
         }
-        if (productDto.getPrice() != null && productDto.getPrice() >= 0) {
-            existingProduct.setPrice(productDto.getPrice());
-        }
         if (productDto.getQuantity() >= 0) {
             existingProduct.setQuantity(productDto.getQuantity());
         }
@@ -140,9 +136,7 @@ public class ProductService {
         if (productDto.getName() == null || productDto.getName().isEmpty()) {
             throw new ValidationError("Барааны нэрийг оруулах шаардлагатай\n");
         }
-        if (productDto.getPrice() == null || productDto.getPrice() < 0) {
-            throw new ValidationError( "Үнэ сөрөг биш байх ёстой");
-        }
+
         if (productDto.getQuantity() < 0) {
             throw new ValidationError("Тоо хэмжээ нь сөрөг биш байх ёстой\n");
         }

@@ -1,19 +1,20 @@
 package com.example.demo.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
-@Builder
-@Getter
 public class ProductDTO {
-
     private Long id;
-
     private String name;
-    private Double price;
+    private double price;
     private int quantity;
+    private Long categoryId;
+
 
 }
