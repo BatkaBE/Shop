@@ -1,19 +1,20 @@
 package com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import java.util.List;
+import java.util.UUID;
 
 @Setter
 @Getter
 @Entity
 @Table(name = "product")
-public class Product {
-
+public class Product extends BaseEntityAudit{
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false)
     private String name;
@@ -29,9 +30,10 @@ public class Product {
     private Category category;
 
     @OneToMany(mappedBy = "product")
+    @JsonIgnore
     private List<OrderProduct> orderProducts;
 
-    public Long getCategoryId() {
+    public UUID getCategoryId() {
         return (category != null) ? category.getId() : null;
     }
 }

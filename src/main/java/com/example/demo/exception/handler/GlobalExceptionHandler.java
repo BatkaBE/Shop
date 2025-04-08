@@ -1,13 +1,17 @@
-package com.example.demo.exception;// GlobalExceptionHandler.java
+package com.example.demo.exception.handler;// GlobalExceptionHandler.java
+
+import com.example.demo.exception.response.ErrorResponse;
+import com.example.demo.exception.error.AppException;
+import com.example.demo.exception.error.NotFoundError;
+import com.example.demo.exception.error.UniqueFieldError;
+import com.example.demo.exception.error.ValidationError;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -38,7 +42,6 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(ex.getMessage());
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {

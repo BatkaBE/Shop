@@ -5,14 +5,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDTO {
-    private Long id;
+    private UUID id;
     private String name;
     private List<OrderDTO> orders;
-    private Long profileId;  // Changed from ProfileDTO to just store the ID
+    private UUID profileId;
+
 
 }

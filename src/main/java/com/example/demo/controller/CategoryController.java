@@ -1,9 +1,10 @@
 package com.example.demo.controller;
 
 import com.example.demo.entity.Category;
-import com.example.demo.service.CategoryService;
+import com.example.demo.service.crud.CategoryService;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/categories")
@@ -26,17 +27,17 @@ public class CategoryController {
     }
 
     @GetMapping("/{id}")
-    public Category getCategoryById(@PathVariable Long id) {
+    public Category getCategoryById(@PathVariable UUID id) {
         return categoryService.getCategoryById(id);
     }
 
     @PutMapping("/{id}")
-    public Category updateCategory(@PathVariable Long id, @RequestBody Category category) {
+    public Category updateCategory(@PathVariable UUID id, @RequestBody Category category) {
         return categoryService.updateCategory(id, category);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteCategory(@PathVariable Long id) {
+    public void deleteCategory(@PathVariable UUID id) {
         categoryService.deleteCategory(id);
     }
 }

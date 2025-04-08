@@ -1,4 +1,3 @@
-// OrderProduct.java (updated)
 package com.example.demo.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -12,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "order_product")
 public class OrderProduct {
     @EmbeddedId
-    private OrderProductId id = new OrderProductId();
+    private OrderProductId id;
 
     @ManyToOne
     @MapsId("orderId")

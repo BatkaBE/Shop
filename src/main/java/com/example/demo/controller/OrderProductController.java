@@ -2,17 +2,16 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.OrderProductDTO;
 import com.example.demo.dto.ProductDTO;
-import com.example.demo.service.OrderProductService;
-import org.springframework.http.HttpStatus;
+import com.example.demo.service.crud.OrderProductService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/cart")
 public class OrderProductController {
-
     private final OrderProductService orderProductService;
 
     public OrderProductController(OrderProductService orderProductService) {
@@ -25,13 +24,13 @@ public class OrderProductController {
         return ResponseEntity.ok("Product added to cart successfully");
     }
     @GetMapping
-    public ResponseEntity<List<ProductDTO>> findOrderedProductsByUser(@RequestParam Long userId) {
+    public ResponseEntity<List<ProductDTO>> findOrderedProductsByUser(@RequestParam UUID userId) {
         List<ProductDTO> products = orderProductService.findOrderedProductsByUser(userId);
         return ResponseEntity.ok(products);
     }
 
     @GetMapping("/{orderId}")
-    public ResponseEntity<List<ProductDTO>> getProductsByOrderId(@PathVariable Long orderId) {
+    public ResponseEntity<List<ProductDTO>> getProductsByOrderId(@PathVariable UUID orderId) {
         List<ProductDTO> products = orderProductService.getProductsByOrderId(orderId);
         return ResponseEntity.ok(products);
     }
@@ -42,7 +41,7 @@ public class OrderProductController {
         return ResponseEntity.ok("Бараа сагснаас устгагдлаа");
     }
     @DeleteMapping("/delete/all")
-    public ResponseEntity<String> deleteProductsByUser(@RequestParam Long userId) {
+    public ResponseEntity<String> deleteProductsByUser(@RequestParam UUID userId) {
         orderProductService.deleteProductsByUserId(userId);
         return ResponseEntity.ok("Хэрэглэгчийн бүх бараа амжилттай устгагдлаа");
     }
@@ -50,7 +49,7 @@ public class OrderProductController {
 
     @PutMapping("/{orderId}")
     public ResponseEntity<Void> updateProductsInOrder(
-            @PathVariable Long orderId,
+            @PathVariable UUID orderId,
             @RequestBody UpdateOrderProductsRequest request) {
         orderProductService.updateProductsInOrder(orderId, request.getToRemove(), request.getToAdd());
         return ResponseEntity.ok().build();

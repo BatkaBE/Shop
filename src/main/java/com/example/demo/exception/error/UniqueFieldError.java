@@ -1,4 +1,4 @@
-package com.example.demo.exception;
+package com.example.demo.exception.error;
 
 public class UniqueFieldError extends RuntimeException {
     private String field;

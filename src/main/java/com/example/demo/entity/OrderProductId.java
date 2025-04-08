@@ -3,26 +3,27 @@ package com.example.demo.entity;
 import jakarta.persistence.Embeddable;
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.UUID;
 
 @Embeddable
 public class OrderProductId implements Serializable {
-    private Long orderId;
-    private Long productId;
+    private UUID orderId;
+    private UUID productId;
 
     // Default constructor
     public OrderProductId() {}
 
     // Parameterized constructor
-    public OrderProductId(Long orderId, Long productId) {
+    public OrderProductId(UUID orderId, UUID productId) {
         this.orderId = orderId;
         this.productId = productId;
     }
 
     // Getters and Setters
-    public Long getOrderId() { return orderId; }
-    public void setOrderId(Long orderId) { this.orderId = orderId; }
-    public Long getProductId() { return productId; }
-    public void setProductId(Long productId) { this.productId = productId; }
+    public UUID getOrderId() { return orderId; }
+    public void setOrderId(UUID orderId) { this.orderId = orderId; }
+    public UUID getProductId() { return productId; }
+    public void setProductId(UUID productId) { this.productId = productId; }
 
     // equals and hashCode
     @Override

@@ -1,23 +1,27 @@
 package com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.UUID;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "profile")
 public class Profile {
     @Id
-    private Long id;
+    private UUID id;
 
     @Column(nullable = false)
     private String address;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @MapsId // Shares the same ID as User
-    @JoinColumn(name = "id") // Refers to the same PK column
-    @ToString.Exclude
+    @MapsId
+    @JoinColumn(name = "id")
+    @JsonIgnore
     private User user;
 }

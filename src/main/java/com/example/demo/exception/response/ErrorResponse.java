@@ -1,4 +1,4 @@
-package com.example.demo.exception;
+package com.example.demo.exception.response;
 
 import java.util.Map;
 
