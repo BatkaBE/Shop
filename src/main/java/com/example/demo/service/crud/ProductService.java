@@ -125,6 +125,7 @@ public class ProductService {
     }
 
     public Optional<ProductDTO> getProductById(UUID id) {
-        return null;
+        return productRepository.findById(id)
+                .map(ProductMapper::toDto);
     }
 }

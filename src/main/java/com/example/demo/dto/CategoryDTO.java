@@ -8,7 +8,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-class CategoryDTO {
+public class CategoryDTO {
     private UUID id;
     private String name;
     private String createdBy;

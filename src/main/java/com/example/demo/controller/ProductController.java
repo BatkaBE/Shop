@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.ProductDTO;
+import com.example.demo.exception.error.NotFoundError;
 import com.example.demo.service.crud.ProductService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -57,10 +58,10 @@ public class ProductController {
      * Get a product by ID.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Optional<Optional<ProductDTO>>> getProductById(@PathVariable UUID id) {
-        Optional<Optional<ProductDTO>> productDto = Optional.ofNullable(productService.getProductById(id));
+    public ResponseEntity<ProductDTO> getProductById(@PathVariable UUID id) {
+        ProductDTO productDto = productService.getProductById(id)
+                .orElseThrow(() -> new NotFoundError("Product not found"));
         return ResponseEntity.ok(productDto);
-
     }
 
     /**

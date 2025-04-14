@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import com.example.demo.config.audit.AuditListener;
 import jakarta.persistence.Column;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -19,6 +20,7 @@ import java.util.Objects;
 @Getter
 @Setter
 @MappedSuperclass
+@EntityListeners(AuditListener.class)
 public abstract class BaseEntityAudit extends BaseEntity implements Serializable {
     @Column(name = "created_at", updatable = false)
     @CreatedDate

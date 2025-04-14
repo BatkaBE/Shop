@@ -15,6 +15,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("SELECT o FROM Order o JOIN o.user u WHERE u.id = ?1")
     List<Order> getOrdersById(UUID userId);
 
-    @Query("SELECT u FROM User u Where u.name = :name")
+    @Query("SELECT COUNT(u) > 0 FROM User u WHERE u.name = :name")
     boolean existsByName(String name);
 }

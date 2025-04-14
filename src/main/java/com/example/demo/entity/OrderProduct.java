@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "order_product")
 public class OrderProduct {
     @EmbeddedId
-    private OrderProductId id;
+    private OrderProductId id = new OrderProductId();
 
     @ManyToOne
     @MapsId("orderId")

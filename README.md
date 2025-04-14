@@ -78,3 +78,13 @@ $ git log
 ```
 Энэ команд нь таны локал орчинд хийсэн commit-ийн түүхийг харуулна.
 
+:
+
+🔐 If using Basic Authentication:
+Content-Type: application/json
+Authorization: Basic dXNlcm5hbWU6cGFzc3dvcmQ=
+Replace dXNlcm5hbWU6cGFzc3dvcmQ= with base64 of username:password.
+
+🔐 If using JWT Token:
+Content-Type: application/json
+Authorization: Bearer <your_jwt_token>
