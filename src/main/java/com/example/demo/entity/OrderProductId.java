@@ -1,6 +1,8 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.Embeddable;
+import lombok.ToString;
+
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
@@ -38,5 +40,12 @@ public class OrderProductId implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(orderId, productId);
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "(" +
+                "orderId = " + orderId + ", " +
+                "productId = " + productId + ")";
     }
 }

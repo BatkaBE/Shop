@@ -33,5 +33,6 @@ public class Order extends BaseEntityAudit {
     private User user;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OrderColumn(name = "products_order")
     private List<OrderProduct> orderProducts = new ArrayList<>();
 }

@@ -2,6 +2,7 @@ package com.example.demo.entity;
 
 import com.example.demo.config.audit.AuditListener;
 import jakarta.persistence.Column;
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;

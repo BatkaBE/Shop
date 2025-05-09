@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -78,50 +79,62 @@ public class OrderService {
 
     @Transactional
     public OrderDTO updateOrder(String currentUser, UUID id, OrderDTO dto) {
+        // Fetch existing order
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new NotFoundError("Захиалга олдсонгүй"));
+
+        // Update audit fields
         order.setUpdatedBy(currentUser);
 
-        // — update date & user if changed —
+        // Update basic fields
         order.setOrderDate(dto.getOrderDate());
+
+        // Update user if changed
         if (!order.getUser().getId().equals(dto.getUserId())) {
             User newUser = userRepository.findById(dto.getUserId())
                     .orElseThrow(() -> new NotFoundError("Хэрэглэгч олдсонгүй"));
             order.setUser(newUser);
         }
 
-        // — sync products list —
-        List<UUID> newIds = Optional.ofNullable(dto.getProductIds())
-                .orElse(Collections.emptyList());
+        // Handle product updates
+        List<UUID> newProductIds = Optional.ofNullable(dto.getProductIds())
+                .orElseGet(Collections::emptyList);
 
-        // remove any OrderProduct whose productId is not in newIds
-        order.getOrderProducts().removeIf(op ->
-                !newIds.contains(op.getProduct().getId())
-        );
-
-        // collect existing IDs for fast lookup
-        Set<UUID> existing = order.getOrderProducts()
-                .stream()
+        // Get current product IDs in the order
+        Set<UUID> currentProductIds = order.getOrderProducts().stream()
                 .map(op -> op.getProduct().getId())
                 .collect(Collectors.toSet());
 
-        // fetch all requested products (and validate count)
-        List<Product> fetched = productRepository.findAllById(newIds);
-        if (fetched.size() != newIds.size()) {
+        // If no changes to products, skip the update
+        if (new HashSet<>(newProductIds).equals(currentProductIds)) {
+            Order updated = orderRepository.save(order);
+            return OrderMapper.toDto(updated);
+        }
+
+        // Fetch all requested products (validate they exist)
+        List<Product> requestedProducts = productRepository.findAllById(newProductIds);
+        if (requestedProducts.size() != newProductIds.size()) {
             throw new NotFoundError("Зарим бараа олдсонгүй");
         }
 
-        // add any new ones
-        for (Product p : fetched) {
-            if (!existing.contains(p.getId())) {
+        // Create a map for quick lookup
+        Map<UUID, Product> productMap = requestedProducts.stream()
+                .collect(Collectors.toMap(Product::getId, Function.identity()));
+
+        // First, remove products that are no longer in the order
+        order.getOrderProducts().removeIf(op -> !newProductIds.contains(op.getProduct().getId()));
+
+        // Then add new products that weren't already in the order
+        newProductIds.forEach(productId -> {
+            if (!currentProductIds.contains(productId)) {
                 OrderProduct op = new OrderProduct();
                 op.setOrder(order);
-                op.setProduct(p);
+                op.setProduct(productMap.get(productId));
                 order.getOrderProducts().add(op);
             }
-        }
+        });
 
-        // — recalc total & save —
+        // Recalculate total and save
         order.setTotalAmount(calculateTotalAmount(order));
         Order updated = orderRepository.save(order);
         return OrderMapper.toDto(updated);

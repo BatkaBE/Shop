@@ -12,7 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "profile")
-public class Profile {
+public class Profile extends BaseEntityAudit{
     @Id
     private UUID id;
 
